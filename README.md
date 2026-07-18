@@ -1,66 +1,72 @@
-# ShowCode - 在线代码展示与分享平台
+# ShowCode — Online Code Showcase & Playground
 
-一个轻量级的在线代码展示与分享工具，支持代码编辑、语法高亮、实时预览和一键分享。
+A lightweight online code editor, preview, and sharing platform with AI-powered coding assistance.
 
-## ✨ 功能特性
+## ✨ Features
 
-- **代码编辑器**：支持多语言语法高亮，内置 HTML/CSS/JS 编辑
-- **实时预览**：编辑代码后自动渲染预览结果
-- **一键分享**：生成分享链接，快速展示你的代码片段
-- **简洁界面**：现代化 UI 设计，响应式布局，支持移动端
-- **零依赖部署**：基于 Python 标准库，无需安装任何第三方依赖
+- **Live Code Editor** — Edit HTML, CSS, and JavaScript with syntax highlighting
+- **Real-time Preview** — See your changes instantly as you type
+- **Device Simulation** — Preview on desktop, tablet (Xiaomi), and mobile (Apple) layouts
+- **One-click Share** — Publish your code snippets and share via URL
+- **AI Coding Assistant** — Built-in chatbot powered by LLMs to generate code from natural language descriptions
+- **Works Gallery** — Browse and discover community-created projects
+- **Zero Dependencies** — Pure frontend, no build tools or frameworks required
 
-## 🚀 快速部署
+## 🚀 Quick Start
 
-### 方式一：直接运行
+### Option 1: Direct Run
 
 ```bash
 python3 server.py
 ```
 
-服务器默认监听 `0.0.0.0:3000`，浏览器访问 `http://你的IP:3000` 即可。
+The server starts on `http://0.0.0.0:3000` by default.
 
-### 方式二：systemd 服务
+### Option 2: systemd Service
 
 ```bash
-# 复制服务文件
+# Copy service file
 sudo cp showcode.service /etc/systemd/system/
 
-# 修改 WorkingDirectory 路径（如果需要）
-sudo sed -i 's|/home/userroot/showcode|/你的实际路径|' /etc/systemd/system/showcode.service
+# Update the WorkingDirectory path if needed
+sudo sed -i 's|/home/userroot/showcode|/your/actual/path|' /etc/systemd/system/showcode.service
 
-# 启动并设置开机自启
+# Enable and start
 sudo systemctl enable --now showcode.service
 ```
 
-## 📁 项目结构
+## 🗂️ Project Structure
 
 ```
 showcode/
-├── index.html          # 主页面 - 代码编辑器与展示界面
-├── server.py           # Python HTTP 服务器（基于 http.server）
-├── showcode.service    # systemd 服务配置文件
-├── README.md           # 项目说明（中文）
-└── README.en.md        # 项目说明（英文）
+├── index.html          # Main application — code editor & gallery UI
+├── server.py           # Python HTTP server (stdlib only)
+├── showcode.service    # systemd service unit file
+├── README.md           # Project documentation (English)
+└── README.zh.md        # Project documentation (Chinese)
 ```
 
-## 🔧 技术栈
+## 🧰 Tech Stack
 
-- **前端**: HTML + CSS + JavaScript（原生，无框架依赖）
-- **后端**: Python 标准库 http.server
-- **部署**: systemd（支持开机自启）
+- **Frontend** — Vanilla HTML/CSS/JavaScript (no frameworks)
+- **Backend** — Python 3 `http.server` (stdlib, zero dependencies)
+- **AI API** — OpenAI-compatible endpoints (configurable)
+- **Deployment** — systemd, supports reverse proxy (Nginx)
 
-## 📝 配置说明
+## 🤖 AI Coding Assistant
 
-### 修改端口
+The built-in AI assistant connects to OpenAI-compatible API endpoints:
 
-编辑 `server.py`，修改 `PORT = 3000` 为你想要的端口号：
+| Model | Endpoint | Status |
+|-------|----------|--------|
+| Qwen3.6-27B | `:8099/v1` | Ready |
+| DeepSeek V4 Flash | `:8104/v1` | Ready |
 
-```python
-PORT = 3000   # 改为你需要的端口
-```
+The assistant maintains conversation context, generates complete HTML pages, and supports code extraction and execution directly in the editor.
 
-### Nginx 反向代理（可选）
+## 🌐 Deployment
+
+### Nginx Reverse Proxy
 
 ```nginx
 server {
@@ -75,6 +81,14 @@ server {
 }
 ```
 
-## 📄 许可证
+### Port Configuration
+
+Edit `server.py` and change `PORT = 3000` to your desired port.
+
+## 📄 License
 
 MIT License
+
+---
+
+*Built with ❤️ for developers who love to show and share their code.*
