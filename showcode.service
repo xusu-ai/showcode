@@ -1,0 +1,15 @@
+[Unit]
+Description=ShowCode Web Server - Port 3000
+After=network.target
+
+[Service]
+Type=simple
+User=userroot
+Group=userroot
+WorkingDirectory=/home/userroot/showcode
+ExecStart=/usr/bin/python3 /home/userroot/showcode/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
