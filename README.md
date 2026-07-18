@@ -40,7 +40,8 @@ showcode/
 ├── index.html          # 主页面 - 代码编辑器与展示界面
 ├── server.py           # Python HTTP 服务器（基于 http.server）
 ├── showcode.service    # systemd 服务配置文件
-└── README.md           # 项目说明
+├── README.md           # 项目说明（中文）
+└── README.en.md        # 项目说明（英文）
 ```
 
 ## 🔧 技术栈
