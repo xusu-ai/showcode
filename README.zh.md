@@ -20,18 +20,13 @@ python3 server.py
 
 服务器默认监听 `0.0.0.0:3000`，浏览器访问 `http://你的IP:3000` 即可。
 
-### 方式二：systemd 服务
+### 方式二：一键部署脚本（推荐）
 
 ```bash
-# 复制服务文件
-sudo cp showcode.service /etc/systemd/system/
-
-# 修改 WorkingDirectory 路径（如果需要）
-sudo sed -i 's|/home/userroot/showcode|/你的实际路径|' /etc/systemd/system/showcode.service
-
-# 启动并设置开机自启
-sudo systemctl enable --now showcode.service
+sudo ./deploy.sh
 ```
+
+自动完成 nginx 配置软链、reload 和启动后端，一条命令搞定。
 
 ## 📁 项目结构
 
@@ -42,8 +37,9 @@ showcode/
 ├── projects/                # 保存的作品落盘目录（自动创建）
 ├── nginx.showcode.conf      # nginx 站点配置（新服务器一键软链）
 ├── deploy.sh                # 全功能部署/运维脚本（见下表）
-├── README.md                # 项目说明（英文）
-└── README.zh.md             # 项目说明（中文）
+├── README.md                # 项目说明（中文）
+├── README.en.md             # 项目说明（英文）
+└── README.zh.md             # 项目说明（中文备份）
 ```
 
 ## 🔁 迁移到新服务器（标准流程）

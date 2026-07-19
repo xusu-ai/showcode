@@ -1,0 +1,124 @@
+# ShowCode — Online Code Showcase & Playground
+
+A lightweight online code editor, preview, and sharing platform with AI-powered coding assistance.
+
+## ✨ Features
+
+- **Live Code Editor** — Edit HTML, CSS, and JavaScript with syntax highlighting
+- **Real-time Preview** — See your changes instantly as you type
+- **Device Simulation** — Preview on desktop, tablet (Xiaomi), and mobile (Apple) layouts
+- **One-click Share** — Publish your code snippets and share via URL
+- **AI Coding Assistant** — Built-in chatbot powered by LLMs to generate code from natural language descriptions
+- **Works Gallery** — Browse and discover community-created projects
+- **Zero Dependencies** — Pure frontend, no build tools or frameworks required
+
+## 🚀 Quick Start
+
+### Option 1: Direct Run
+
+```bash
+python3 server.py
+```
+
+The server starts on `http://0.0.0.0:3000` by default.
+
+### Option 2: Deploy Script (Recommended)
+
+```bash
+sudo ./deploy.sh
+```
+
+This chains nginx configuration, reloads it, and starts the backend in one step.
+
+## 🗂️ Project Structure
+
+```
+showcode/
+├── index.html               # Main application — code editor & gallery UI
+├── server.py                # Python backend (stdlib only, handles /api/save)
+├── projects/                # Saved projects land here (auto-created)
+├── nginx.showcode.conf      # nginx site config (drop-in for new servers)
+├── deploy.sh                # all-in-one deploy/ops script
+├── README.md                # Project documentation (English)
+├── README.en.md             # Project documentation (English backup)
+└── README.zh.md             # Project documentation (Chinese)
+```
+
+## 🔁 Migration to a New Server
+
+The business logic is decoupled from nginx: nginx only serves static files and reverse proxies, all application logic lives in `server.py`.
+
+```bash
+# 1) On the target server: install nginx and Python
+sudo apt update && sudo apt install -y nginx python3
+
+# 2) Copy the entire showcode/ directory to the target server (any path, e.g. /opt/showcode)
+sudo mkdir -p /opt && sudo cp -r showcode /opt/
+
+# 3) Run the deployment script
+cd /opt/showcode && sudo ./deploy.sh
+```
+
+`deploy.sh` sub-commands:
+
+| Command | Purpose |
+|---------|---------|
+| `sudo ./deploy.sh` | Full deploy: link nginx config + reload + start backend |
+| `sudo ./deploy.sh start` / `stop` / `restart` / `status` | Backend operations |
+| `sudo ./deploy.sh service` | Install as a systemd service (no separate .service file needed) |
+
+### Port & Directory Configuration
+
+Only two changes needed in `nginx.showcode.conf`:
+
+- `root /showcode;` — change to your actual directory path
+- `proxy_pass http://127.0.0.1:8104/v1/;` — change to your LLM API upstream (or remove the entire block if AI is not needed)
+
+To change the backend port (default 3000), edit `PORT =` in `server.py` and keep the `proxy_pass` port in `nginx.showcode.conf` in sync.
+
+## 🧰 Tech Stack
+
+- **Frontend** — Vanilla HTML/CSS/JavaScript (no frameworks)
+- **Backend** — Python 3 `http.server` (stdlib, zero dependencies)
+- **AI API** — OpenAI-compatible endpoints (configurable)
+- **Deployment** — systemd, supports reverse proxy (Nginx)
+
+## 🤖 AI Coding Assistant
+
+The built-in AI assistant connects to OpenAI-compatible API endpoints:
+
+| Model | Endpoint | Status |
+|-------|----------|--------|
+| Qwen3.6-27B | `:8099/v1` | Ready |
+| DeepSeek V4 Flash | `:8104/v1` | Ready |
+
+The assistant maintains conversation context, generates complete HTML pages, and supports code extraction and execution directly in the editor.
+
+## 🌐 Deployment
+
+### Nginx Reverse Proxy
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+### Port Configuration
+
+Edit `server.py` and change `PORT = 3000` to your desired port.
+
+## 📄 License
+
+MIT License
+
+---
+
+*Built with ❤️ for developers who love to show and share their code.*
