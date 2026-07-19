@@ -396,8 +396,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
 <script>
 const SK='showcode_projects',CK='showcode_chat',LK='showcode_lang',MK='showcode_model';
 const MODELS=[
-  {id:'qwen',name:'Qwen3.6-27B',base:'http://127.0.0.1:8099/v1',model:'Qwen3.6-27B-Q4-GPU'},
-  {id:'deepseek',name:'DeepSeek V4 Flash',base:'http://127.0.0.1:8104/v1',model:'DeepSeek-V4-Flash'}
+  {id:'qwen',name:'Qwen3.6-27B',model:'Qwen3.6-27B-Q4-GPU'},
+  {id:'deepseek',name:'DeepSeek V4 Flash',model:'DeepSeek-V4-Flash'}
 ];
 let curModel=MODELS[1];
 let lang='zh',projects=[],chat=[],mid=null,tab='latest',filter='all',search='',lastCode='',gen=false,pt,activeEditor='html',deviceMode='desktop',fitActive=true;
@@ -474,7 +474,8 @@ const i18n={
     justNow:'刚刚',mAgo:'分钟前',hAgo:'小时前',dAgo:'天前',
     // Generation
     beforeunload:'AI 正在生成中，确定要离开吗？',loopDetected:'检测到重复生成死循环',
-    genInterrupted:'生成中断',genPreserved:'已保留已生成内容'
+    genInterrupted:'生成中断',genPreserved:'已保留已生成内容',
+    aiUnavailable:'当前 AI 服务不可用，可能正在维护或网络中断，请稍后重试'
   },
   en:{
     // Nav
@@ -503,7 +504,8 @@ const i18n={
     justNow:'Just now',mAgo:'m ago',hAgo:'h ago',dAgo:'d ago',
     // Generation
     beforeunload:'AI is generating. Are you sure you want to leave?',loopDetected:'Repetitive generation loop detected',
-    genInterrupted:'Generation interrupted',genPreserved:'Generated content has been preserved'
+    genInterrupted:'Generation interrupted',genPreserved:'Generated content has been preserved',
+    aiUnavailable:'AI service is currently unavailable (maintenance or network issue). Please try again later'
   }
 };
 function t(k){return i18n[lang][k]||k}
@@ -720,7 +722,7 @@ async function sendMsg(){
     const SYS='You are a professional full-stack development assistant. When a user describes a page or feature they want, you generate complete, ready-to-run HTML code. The code should be beautiful, modern, responsive, and wrapped in a ```html block. Respond in the same language the user used in their question.';
     // 只追加模式：system 固定 + 完整历史(含本次 user) → 极高前缀缓存命中率
     const msgs=[{role:'system',content:SYS},...chat];
-    const res=await fetch(curModel.base+'/chat/completions',{
+    const res=await fetch('/api/chat',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:curModel.model,messages:msgs,temperature:0.7,max_tokens:16384,stream:true}),
       signal:ac.signal
@@ -767,16 +769,16 @@ async function sendMsg(){
     const code=ex(full);if(code)lastCode=code;
     addMsgActions(el, full);sc();
   }catch(err){
-    ty.remove();
+ty.remove();
     if(err.name==='AbortError'){
       if(watchdogDone){
-        // 守护中断：保留已生成内容
         if(full){chat.push({role:'assistant',content:full});svChat();const c=ex(full);if(c)lastCode=c;addMsgActions(el,full)}
         addMsg('assistant','&#9888; '+t('genInterrupted')+'：'+watchdogReason+'。'+t('genPreserved'))
       }
-      return; // user-interrupted or watchdog-stopped: silent
+      return;
     }
-    addMsg('assistant','&#10060; '+t('error')+': '+err.message)
+    var msg = /Failed to fetch|NetworkError|ECONN|fetch|upstream|502|503|504/i.test(err.message+' ') ? t('aiUnavailable') : t('error')+': '+err.message;
+    addMsg('assistant','&#10060; '+msg)
   }
   finally{
     ac=null;gen=false;resetSendBtn();

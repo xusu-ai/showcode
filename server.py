@@ -52,9 +52,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             headers={'Content-Type': 'application/json'}, method='POST')
         return json.loads(urllib.request.urlopen(req, timeout=30).read().decode())['choices'][0]['message']['content']
 
-    def _proxy_llm(self, method):
+    def _proxy_llm(self, method, upstream_path=None):
         parsed = urlparse(self.path)
-        target = UPSTREAM_LLM + parsed.path + ('?' + parsed.query if parsed.query else '')
+        path = upstream_path or parsed.path
+        target = UPSTREAM_LLM + path + ('?' + parsed.query if parsed.query else '')
         length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(length) if length > 0 else None
         headers = {k: v for k, v in self.headers.items()
@@ -109,6 +110,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         p = urlparse(self.path).path
         if p.startswith('/v1/'): self._proxy_llm('POST')
+        elif p == '/api/chat': self._proxy_llm('POST', '/v1/chat/completions')
         elif p == '/api/save': self._save_project()
         else: self._send_json(404, {'ok': False, 'error': 'not found'})
 
