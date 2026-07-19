@@ -39,12 +39,47 @@ sudo systemctl enable --now showcode.service
 
 ```
 showcode/
-├── index.html          # Main application — code editor & gallery UI
-├── server.py           # Python HTTP server (stdlib only)
-├── showcode.service    # systemd service unit file
-├── README.md           # Project documentation (English)
-└── README.zh.md        # Project documentation (Chinese)
+├── index.html               # Main application — code editor & gallery UI
+├── server.py                # Python backend (stdlib only, handles /api/save)
+├── projects/                # Saved projects land here (auto-created)
+├── nginx.showcode.conf      # nginx site config (drop-in for new servers)
+├── deploy.sh                # all-in-one deploy/ops script (see below)
+├── README.md                # Project documentation (English)
+└── README.zh.md             # Project documentation (Chinese)
 ```
+
+## 🔁 迁移到新服务器（标准流程）
+
+业务代码与 nginx 解耦：nginx 只做反向代理和静态服务，所有业务逻辑在 `server.py` 里。
+新机器上只需 nginx 标准安装 + 拷贝本文件夹即可运行：
+
+```bash
+# 1) 目标服务器：安装标准 nginx
+sudo apt update && sudo apt install -y nginx python3
+
+# 2) 把整个 showcode/ 目录拷到目标服务器（任意路径，例如 /opt/showcode）
+sudo mkdir -p /opt && sudo cp -r showcode /opt/
+
+# 3) 进入目录跑一键部署脚本
+cd /opt/showcode && sudo ./deploy.sh
+```
+
+`deploy.sh` 子命令（合并 systemd 单元、启停脚本于一体）：
+
+| 命令 | 用途 |
+|------|------|
+| `sudo ./deploy.sh` | 完整部署：链 nginx 配置 + reload + 启动后端 |
+| `sudo ./deploy.sh start` / `stop` / `restart` / `status` | 后端运维 |
+| `sudo ./deploy.sh service` | 安装为 systemd 开机自启服务（无需单独 .service 文件）|
+
+### 端口与目录调整
+
+只在 `nginx.showcode.conf` 里改两处即可：
+
+- `root /showcode;` → 改成实际目录路径
+- `proxy_pass http://127.0.0.1:8104/v1/;` → 改成你的 LLM API 上游（如不需要 AI 可整段删除）
+
+后端端口（默认 3000）想改的话，改 `server.py` 里的 `PORT =` 即可；同时同步 `nginx.showcode.conf` 里的 `proxy_pass` 端口。
 
 ## 🧰 Tech Stack
 

@@ -1,0 +1,5 @@
+# User-generated projects (not part of the source)
+projects/
+projects.json
+__pycache__/
+*.pyc
