@@ -1,97 +1,102 @@
-# ShowCode - 在线代码展示与分享平台
+# ShowCode — Online Code Showcase & Playground
 
-一个轻量级的在线代码展示与分享工具，支持代码编辑、语法高亮、实时预览和一键分享。
+A lightweight online code editor, preview, and sharing platform with AI-powered coding assistance.
 
-## ✨ 功能特性
+## ✨ Features
 
-- **代码编辑器**：支持多语言语法高亮，内置 HTML/CSS/JS 编辑
-- **实时预览**：编辑代码后自动渲染预览结果
-- **一键分享**：生成分享链接，快速展示你的代码片段
-- **简洁界面**：现代化 UI 设计，响应式布局，支持移动端
-- **零依赖部署**：基于 Python 标准库，无需安装任何第三方依赖
+- **Live Code Editor** — Edit HTML, CSS, and JavaScript with syntax highlighting
+- **Real-time Preview** — See your changes instantly as you type
+- **Device Simulation** — Preview on desktop, tablet (Xiaomi), and mobile (Apple) layouts
+- **One-click Share** — Publish your code snippets and share via URL
+- **AI Coding Assistant** — Built-in chatbot powered by LLMs to generate code from natural language descriptions
+- **Works Gallery** — Browse and discover community-created projects
+- **Zero Dependencies** — Pure frontend, no build tools or frameworks required
 
-## 🚀 快速部署
+## 🚀 Quick Start
 
-### 方式一：直接运行
+### Option 1: Direct Run
 
 ```bash
 python3 server.py
 ```
 
-服务器默认监听 `0.0.0.0:3000`，浏览器访问 `http://你的IP:3000` 即可。
+The server starts on `http://0.0.0.0:3000` by default.
 
-### 方式二：一键部署脚本（推荐）
+### Option 2: Deploy Script (Recommended)
 
 ```bash
 sudo ./deploy.sh
 ```
 
-自动完成 nginx 配置软链、reload 和启动后端，一条命令搞定。
+This chains nginx configuration, reloads it, and starts the backend in one step.
 
-## 📁 项目结构
+## 🗂️ Project Structure
 
 ```
 showcode/
-├── index.html               # 主页面 - 代码编辑器与展示界面
-├── server.py                # Python 后端（标准库，处理 /api/save）
-├── projects/                # 保存的作品落盘目录（自动创建）
-├── nginx.showcode.conf      # nginx 站点配置（新服务器一键软链）
-├── deploy.sh                # 全功能部署/运维脚本（见下表）
-├── README.md                # 项目说明（中文）
-├── README.en.md             # 项目说明（英文）
-└── README.zh.md             # 项目说明（中文备份）
+├── index.html               # Main application — code editor & gallery UI
+├── server.py                # Python backend (stdlib only, handles /api/save)
+├── projects/                # Saved projects land here (auto-created)
+├── nginx.showcode.conf      # nginx site config (drop-in for new servers)
+├── deploy.sh                # all-in-one deploy/ops script
+├── README.md                # Project documentation (English)
+├── README.en.md             # Project documentation (English backup)
+└── README.zh.md             # Project documentation (Chinese)
 ```
 
-## 🔁 迁移到新服务器（标准流程）
+## 🔁 Migration to a New Server
 
-业务代码与 nginx 完全解耦：nginx 只做反向代理和静态服务，所有业务逻辑写在 `server.py` 里。
-新机器只要装 nginx + Python，把本文件夹拷过去就能跑：
+The business logic is decoupled from nginx: nginx only serves static files and reverse proxies, all application logic lives in `server.py`.
 
 ```bash
-# 1) 目标服务器：装标准 nginx 和 Python
+# 1) On the target server: install nginx and Python
 sudo apt update && sudo apt install -y nginx python3
 
-# 2) 把整个 showcode/ 目录拷到目标服务器（路径随意，例如 /opt/showcode）
+# 2) Copy the entire showcode/ directory to the target server (any path, e.g. /opt/showcode)
 sudo mkdir -p /opt && sudo cp -r showcode /opt/
 
-# 3) 进目录跑一键部署脚本
+# 3) Run the deployment script
 cd /opt/showcode && sudo ./deploy.sh
 ```
 
-`deploy.sh` 子命令（systemd 单元、启停脚本都合并进来）：
+`deploy.sh` sub-commands:
 
-| 命令 | 用途 |
-|------|------|
-| `sudo ./deploy.sh` | 完整部署：软链 nginx 配置 + reload + 启动后端 |
-| `sudo ./deploy.sh start` / `stop` / `restart` / `status` | 后端运维 |
-| `sudo ./deploy.sh service` | 安装为 systemd 开机自启服务（不需单独 .service 文件）|
+| Command | Purpose |
+|---------|---------|
+| `sudo ./deploy.sh` | Full deploy: link nginx config + reload + start backend |
+| `sudo ./deploy.sh start` / `stop` / `restart` / `status` | Backend operations |
+| `sudo ./deploy.sh service` | Install as a systemd service (no separate .service file needed) |
 
-### 调端口/目录
+### Port & Directory Configuration
 
-只需改 `nginx.showcode.conf` 两处：
+Only two changes needed in `nginx.showcode.conf`:
 
-- `root /showcode;` → 改成实际目录
-- `proxy_pass http://127.0.0.1:8104/v1/;` → 你的 LLM 上游（不用 AI 就整段删掉）
+- `root /showcode;` — change to your actual directory path
+- `proxy_pass http://127.0.0.1:8104/v1/;` — change to your LLM API upstream (or remove the entire block if AI is not needed)
 
-后端端口默认 3000，要改就改 `server.py` 里的 `PORT =`，同步改 `nginx.showcode.conf` 里 `proxy_pass` 的端口。
+To change the backend port (default 3000), edit `PORT =` in `server.py` and keep the `proxy_pass` port in `nginx.showcode.conf` in sync.
 
-## 🔧 技术栈
+## 🧰 Tech Stack
 
-- **前端**: HTML + CSS + JavaScript（原生，无框架依赖）
-- **后端**: Python 标准库 http.server
-- **部署**: systemd（支持开机自启）
+- **Frontend** — Vanilla HTML/CSS/JavaScript (no frameworks)
+- **Backend** — Python 3 `http.server` (stdlib, zero dependencies)
+- **AI API** — OpenAI-compatible endpoints (configurable)
+- **Deployment** — systemd, supports reverse proxy (Nginx)
 
-## 📝 配置说明
+## 🤖 AI Coding Assistant
 
-### 修改端口
+The built-in AI assistant connects to OpenAI-compatible API endpoints:
 
-编辑 `server.py`，修改 `PORT = 3000` 为你想要的端口号：
+| Model | Endpoint | Status |
+|-------|----------|--------|
+| Qwen3.6-27B | `:8099/v1` | Ready |
+| DeepSeek V4 Flash | `:8104/v1` | Ready |
 
-```python
-PORT = 3000   # 改为你需要的端口
-```
+The assistant maintains conversation context, generates complete HTML pages, and supports code extraction and execution directly in the editor.
 
-### Nginx 反向代理（可选）
+## 🌐 Deployment
+
+### Nginx Reverse Proxy
 
 ```nginx
 server {
@@ -106,6 +111,14 @@ server {
 }
 ```
 
-## 📄 许可证
+### Port Configuration
+
+Edit `server.py` and change `PORT = 3000` to your desired port.
+
+## 📄 License
 
 MIT License
+
+---
+
+*Built with ❤️ for developers who love to show and share their code.*
