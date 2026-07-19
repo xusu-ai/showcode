@@ -22,18 +22,13 @@ python3 server.py
 
 The server starts on `http://0.0.0.0:3000` by default.
 
-### Option 2: systemd Service
+### Option 2: Deploy Script (Recommended)
 
 ```bash
-# Copy service file
-sudo cp showcode.service /etc/systemd/system/
-
-# Update the WorkingDirectory path if needed
-sudo sed -i 's|/home/userroot/showcode|/your/actual/path|' /etc/systemd/system/showcode.service
-
-# Enable and start
-sudo systemctl enable --now showcode.service
+sudo ./deploy.sh
 ```
+
+This chains nginx configuration, reloads it, and starts the backend in one step.
 
 ## 🗂️ Project Structure
 
@@ -43,43 +38,42 @@ showcode/
 ├── server.py                # Python backend (stdlib only, handles /api/save)
 ├── projects/                # Saved projects land here (auto-created)
 ├── nginx.showcode.conf      # nginx site config (drop-in for new servers)
-├── deploy.sh                # all-in-one deploy/ops script (see below)
+├── deploy.sh                # all-in-one deploy/ops script
 ├── README.md                # Project documentation (English)
 └── README.zh.md             # Project documentation (Chinese)
 ```
 
-## 🔁 迁移到新服务器（标准流程）
+## 🔁 Migration to a New Server
 
-业务代码与 nginx 解耦：nginx 只做反向代理和静态服务，所有业务逻辑在 `server.py` 里。
-新机器上只需 nginx 标准安装 + 拷贝本文件夹即可运行：
+The business logic is decoupled from nginx: nginx only serves static files and reverse proxies, all application logic lives in `server.py`.
 
 ```bash
-# 1) 目标服务器：安装标准 nginx
+# 1) On the target server: install nginx and Python
 sudo apt update && sudo apt install -y nginx python3
 
-# 2) 把整个 showcode/ 目录拷到目标服务器（任意路径，例如 /opt/showcode）
+# 2) Copy the entire showcode/ directory to the target server (any path, e.g. /opt/showcode)
 sudo mkdir -p /opt && sudo cp -r showcode /opt/
 
-# 3) 进入目录跑一键部署脚本
+# 3) Run the deployment script
 cd /opt/showcode && sudo ./deploy.sh
 ```
 
-`deploy.sh` 子命令（合并 systemd 单元、启停脚本于一体）：
+`deploy.sh` sub-commands:
 
-| 命令 | 用途 |
-|------|------|
-| `sudo ./deploy.sh` | 完整部署：链 nginx 配置 + reload + 启动后端 |
-| `sudo ./deploy.sh start` / `stop` / `restart` / `status` | 后端运维 |
-| `sudo ./deploy.sh service` | 安装为 systemd 开机自启服务（无需单独 .service 文件）|
+| Command | Purpose |
+|---------|---------|
+| `sudo ./deploy.sh` | Full deploy: link nginx config + reload + start backend |
+| `sudo ./deploy.sh start` / `stop` / `restart` / `status` | Backend operations |
+| `sudo ./deploy.sh service` | Install as a systemd service (no separate .service file needed) |
 
-### 端口与目录调整
+### Port & Directory Configuration
 
-只在 `nginx.showcode.conf` 里改两处即可：
+Only two changes needed in `nginx.showcode.conf`:
 
-- `root /showcode;` → 改成实际目录路径
-- `proxy_pass http://127.0.0.1:8104/v1/;` → 改成你的 LLM API 上游（如不需要 AI 可整段删除）
+- `root /showcode;` — change to your actual directory path
+- `proxy_pass http://127.0.0.1:8104/v1/;` — change to your LLM API upstream (or remove the entire block if AI is not needed)
 
-后端端口（默认 3000）想改的话，改 `server.py` 里的 `PORT =` 即可；同时同步 `nginx.showcode.conf` 里的 `proxy_pass` 端口。
+To change the backend port (default 3000), edit `PORT =` in `server.py` and keep the `proxy_pass` port in `nginx.showcode.conf` in sync.
 
 ## 🧰 Tech Stack
 
